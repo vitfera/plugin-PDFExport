@@ -1,6 +1,35 @@
-# Plugin PDF Export
+# PDFExport Plugin para MapasCulturais
 
-Plugin para geração de PDFs das fichas de inscrição do MapasCulturais v6.
+Plugin para exportar registrations do MapasCulturais em formato PDF usando a biblioteca mPDF.
+
+## Instalação
+
+1. Clone ou baixe este plugin no diretório de plugins do MapasCulturais:
+```bash
+cd /caminho/para/mapasculturais/src/plugins/
+git clone https://github.com/vitfera/plugin-PDFExport.git PDFExport
+```
+
+2. Instale as dependências via Composer:
+```bash
+cd PDFExport
+composer install
+```
+
+3. Ative o plugin no arquivo de configuração do MapasCulturais ou via interface administrativa.
+
+## Funcionalidades
+
+- Adiciona botão "Exportar PDF" nas páginas de registration
+- Gera PDF com dados da registration usando template customizável
+- Suporte a CSS personalizado para formatação do PDF
+- Sistema de hooks integrado ao MapasCulturais
+
+## Dependências
+
+- PHP 7.4+
+- MapasCulturais v6+
+- mPDF 8.x (instalado via Composer)
 
 ## Funcionalidades
 
