@@ -1,0 +1,56 @@
+.pdf-export-section {
+    margin: 1rem 0 !important;
+}
+
+.pdf-export-section .button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.pdf-export-section .button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.pdf-export-section .button mc-icon {
+    font-size: 1.1em;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .pdf-export-section {
+        justify-content: center !important;
+    }
+    
+    .pdf-export-section .button {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+}
+
+.pdf-export-button .button {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.pdf-export-button .button:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.pdf-export-button .button--icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pdf-export-loading {
+    display: none;
+    margin-left: 10px;
+}
+
+.pdf-export-loading.active {
+    display: inline-block;
+}

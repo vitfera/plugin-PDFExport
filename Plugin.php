@@ -9,7 +9,13 @@ class Plugin extends \MapasCulturais\Plugin
 {
     function __construct($config = [])
     {
-        $config += [];
+        $config += [
+            'button_text' => 'Exportar PDF',
+            'pdf_title' => 'Dados da Inscrição',
+            'show_registration_fields' => true,
+            'show_agent_fields' => true,
+            'custom_css' => ''
+        ];
         parent::__construct($config);
     }
 
@@ -17,6 +23,17 @@ class Plugin extends \MapasCulturais\Plugin
     {
         $app = App::i();
         $plugin = $this;
+
+        // register translation text domain
+        i::load_textdomain('pdfexport', __DIR__ . "/translations");
+
+        // Load CSS
+        $app->hook('GET(<<*>>):before', function() use ($app) {
+            $app->view->enqueueStyle('app-v2', 'pdfexport-v2', 'css/pdf-export.css');
+        });
+
+        // Registrar Controller
+        $app->registerController('pdfexport', PDFController::class);
 
         // Log de debug para confirmar que o plugin está sendo inicializado
         error_log('PDFExport Plugin: _init() executado - Plugin inicializado com sucesso');
@@ -55,8 +72,8 @@ class Plugin extends \MapasCulturais\Plugin
             echo '
             <!-- PDFEXPORT-HOOK: BEGIN -->
             <div class="pdf-export-section" style="display: flex; justify-content: flex-end; margin: 1rem 0; gap: 10px; background: #f0f0f0; padding: 10px; border-radius: 5px;">
-                <button id="pdf-download-btn" class="button button--danger button--icon button--sm" onclick="downloadRegistrationPDF(' . $registration->id . ')" title="Baixar inscrição em PDF">
-                    📄 Baixar PDF
+                <button id="pdf-download-btn" class="button button--danger button--icon button--sm" onclick="downloadRegistrationPDF(' . $registration->id . ')" title="' . i::__('Baixar inscrição em PDF', 'pdfexport') . '">
+                    📄 ' . i::__($plugin->config['button_text'], 'pdfexport') . '
                 </button>
             </div>
             <!-- PDFEXPORT-HOOK: END -->
@@ -81,9 +98,7 @@ class Plugin extends \MapasCulturais\Plugin
             </script>
             ';
         });
-        
 
-        
         // Hook para adicionar rota de download PDF
         $app->hook('GET(registration.downloadPdf)', function() use($app, $plugin) {
             /** @var \MapasCulturais\Controllers\Registration $this */

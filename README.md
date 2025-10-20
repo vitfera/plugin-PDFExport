@@ -18,12 +18,62 @@ composer install
 
 3. Ative o plugin no arquivo de configuração do MapasCulturais ou via interface administrativa.
 
+## Configuração Avançada
+
+Você pode personalizar o comportamento do plugin através de parâmetros de configuração:
+
+```php
+'plugins' => [
+    'PDFExport' => [
+        'namespace' => 'PDFExport',
+        'config' => [
+            'button_text' => 'Baixar PDF',
+            'pdf_title' => 'Comprovante de Inscrição',
+            'show_registration_fields' => true,
+            'show_agent_fields' => true,
+            'custom_css' => 'body { font-family: Arial; }'
+        ]
+    ]
+]
+```
+
+### Parâmetros Disponíveis
+
+- **button_text**: Texto exibido no botão (padrão: "Exportar PDF")
+- **pdf_title**: Título do documento PDF (padrão: "Dados da Inscrição")
+- **show_registration_fields**: Exibir campos da inscrição (padrão: true)
+- **show_agent_fields**: Exibir dados do agente (padrão: true)  
+- **custom_css**: CSS personalizado para o PDF (padrão: '')
+
+## Desenvolvimento
+
+Para trabalhar com os assets do plugin:
+
+```bash
+# Instalar dependências
+npm install
+
+# Modo desenvolvimento
+npm run dev
+
+# Build para produção
+npm run build
+
+# Watch mode
+npm run watch
+```
+
 ## Funcionalidades
 
-- Adiciona botão "Exportar PDF" nas páginas de registration
-- Gera PDF com dados da registration usando template customizável
-- Suporte a CSS personalizado para formatação do PDF
-- Sistema de hooks integrado ao MapasCulturais
+- ✅ Adiciona botão "Exportar PDF" nas páginas de registration
+- ✅ Gera PDF com dados da registration usando template customizável
+- ✅ Suporte a CSS personalizado para formatação do PDF
+- ✅ Sistema de hooks integrado ao MapasCulturais
+- ✅ Controller dedicado para endpoints de PDF
+- ✅ Sistema de internacionalização (i18n)
+- ✅ Configuração flexível via parâmetros
+- ✅ Preview de PDF no navegador
+- ✅ Build system com Laravel Mix
 
 ## Dependências
 
