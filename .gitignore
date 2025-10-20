@@ -1,18 +1,17 @@
-# Composer
-/vendor/
-composer.lock
-
-# PHP
-*.log
-*.tmp
-*.temp
-
 # IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+.idea
+
+# Node.js / Laravel Mix
+assets-src/node_modules
+node_modules/
+
+# Build artifacts (gerados pelo Laravel Mix)
+assets/js/app.js
+assets/css/plugin-PDFExport.css
+mix-manifest.json
+
+# Logs
+*.log
 
 # OS
 .DS_Store
@@ -28,19 +27,7 @@ cache/
 tmp/
 temp/
 
-# mPDF temporary files
-/vendor/mpdf/mpdf/tmp/*
-!/vendor/mpdf/mpdf/tmp/.gitignore
-
-# Logs
-logs/
-*.log
-
 # Environment
 .env
 .env.local
 .env.*.local
-
-# Build artifacts
-dist/
-build/
