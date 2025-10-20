@@ -28,7 +28,7 @@ composer install
 ## Dependências
 
 - PHP 7.4+
-- MapasCulturais v6+
+- MapasCulturais v7+
 - mPDF 8.x (instalado via Composer)
 
 ## Funcionalidades
