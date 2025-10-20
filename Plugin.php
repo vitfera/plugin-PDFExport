@@ -5,6 +5,10 @@ namespace PDFExport;
 use MapasCulturais\App;
 use MapasCulturais\i;
 
+// Incluir dependências diretamente
+require_once __DIR__ . '/Services/PDFService.php';
+require_once __DIR__ . '/Controller.php';
+
 class Plugin extends \MapasCulturais\Plugin
 {
     function __construct($config = [])
@@ -37,15 +41,6 @@ class Plugin extends \MapasCulturais\Plugin
 
         // Log de debug para confirmar que o plugin está sendo inicializado
         error_log('PDFExport Plugin: _init() executado - Plugin inicializado com sucesso');
-
-        // Registra o autoload do composer do plugin
-        $composer_autoload = __DIR__ . '/vendor/autoload.php';
-        if (file_exists($composer_autoload)) {
-            require_once $composer_autoload;
-            error_log('PDFExport Plugin: Composer autoload carregado');
-        } else {
-            error_log('PDFExport Plugin: Composer autoload não encontrado em: ' . $composer_autoload);
-        }
 
         // Hook para adicionar botão PDF - usar hook genérico mas com controle
         $app->hook('template(<<*>>):after', function() use($app, $plugin) {

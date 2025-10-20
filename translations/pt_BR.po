@@ -32,3 +32,39 @@ msgstr "Número da Inscrição"
 #: views/registration-pdf.php
 msgid "Data da Inscrição"
 msgstr "Data da Inscrição"
+
+#: Services/PDFService.php
+msgid "Informações Básicas"
+msgstr "Informações Básicas"
+
+#: Services/PDFService.php
+msgid "Status"
+msgstr "Status"
+
+#: Services/PDFService.php
+msgid "Dados do Responsável"
+msgstr "Dados do Responsável"
+
+#: Services/PDFService.php
+msgid "Nome"
+msgstr "Nome"
+
+#: Services/PDFService.php
+msgid "Email"
+msgstr "Email"
+
+#: Controller.php
+msgid "ID da inscrição não fornecido"
+msgstr "ID da inscrição não fornecido"
+
+#: Controller.php
+msgid "Inscrição não encontrada"
+msgstr "Inscrição não encontrada"
+
+#: Controller.php
+msgid "Erro ao gerar PDF"
+msgstr "Erro ao gerar PDF"
+
+#: Controller.php
+msgid "Erro ao gerar preview do PDF"
+msgstr "Erro ao gerar preview do PDF"

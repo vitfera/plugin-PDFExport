@@ -10,13 +10,15 @@ cd /caminho/para/mapasculturais/src/plugins/
 git clone https://github.com/vitfera/plugin-PDFExport.git PDFExport
 ```
 
-2. Instale as dependências via Composer:
+2. **Opcional**: Instale as dependências via Composer para funcionalidade PDF completa:
 ```bash
 cd PDFExport
 composer install
 ```
 
 3. Ative o plugin no arquivo de configuração do MapasCulturais ou via interface administrativa.
+
+**Nota**: O plugin funciona sem o Composer, gerando HTML otimizado para impressão como PDF pelo navegador. Com o Composer instalado, gera arquivos PDF nativos usando mPDF.
 
 ## Configuração Avançada
 
@@ -79,7 +81,8 @@ npm run watch
 
 - PHP 7.4+
 - MapasCulturais v7+
-- mPDF 8.x (instalado via Composer)
+- **Opcional**: mPDF 8.x (instalado via Composer para funcionalidade PDF completa)
+- **Fallback**: Funciona sem dependências externas, gerando HTML para impressão
 
 ## Funcionalidades
 

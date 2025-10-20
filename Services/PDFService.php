@@ -5,204 +5,162 @@ namespace PDFExport\Services;
 use MapasCulturais\App;
 use MapasCulturais\i;
 use MapasCulturais\Entities\Registration;
-use Mpdf\Mpdf;
-use Mpdf\HTMLParserMode;
 
 class PDFService
 {
-    protected $mpdf;
-    
     public function __construct()
     {
-        $this->initMpdf();
-    }
-
-    /**
-     * Inicializa a configuração do mPDF
-     */
-    protected function initMpdf()
-    {
-        $this->mpdf = new Mpdf([
-            'tempDir' => sys_get_temp_dir(),
-            'mode' => 'utf-8',
-            'format' => 'A4',
-            'pagenumPrefix' => 'Página ',
-            'pagenumSuffix' => '  ',
-            'nbpgPrefix' => ' de ',
-            'nbpgSuffix' => '',
-            'margin_top' => 20,
-            'margin_bottom' => 20,
-            'margin_left' => 15,
-            'margin_right' => 15,
-            'default_font' => 'DejaVuSans',
-        ]);
-    }
-
-    /**
-     * Gera o PDF da ficha de inscrição
-     * 
-     * @param Registration $registration
-     */
-    public function generateRegistrationPDF(Registration $registration)
-    {
-        $app = App::i();
-        
-        try {
-            // Define o título do documento
-            $title = sprintf(
-                'Ficha de Inscrição - %s - %s',
-                $registration->opportunity->name,
-                $registration->number
-            );
-            
-            $this->mpdf->SetTitle($title);
-            
-            // Adiciona CSS base
-            $this->addBaseCSS();
-            
-            // Gera o conteúdo HTML
-            $htmlContent = $this->generateHTMLContent($registration);
-            
-            // Adiciona cabeçalho e rodapé
-            $this->addHeader($registration);
-            $this->addFooter();
-            
-            // Escreve o conteúdo no PDF
-            $this->mpdf->WriteHTML($htmlContent);
-            
-            // Define o nome do arquivo
-            $filename = sprintf(
-                'ficha-inscricao-%s-%s.pdf',
-                $registration->opportunity->id,
-                $registration->number
-            );
-            
-            // Força o download
-            $this->mpdf->Output($filename, 'D');
-            
-        } catch (\Exception $e) {
-            $app->log->error('Erro ao gerar PDF: ' . $e->getMessage());
-            throw new \Exception(i::__('Erro ao gerar PDF da ficha de inscrição'));
+        // Verificar se a biblioteca mPDF está disponível
+        if (!$this->isMpdfAvailable()) {
+            error_log('PDFExport: mPDF não está disponível, usando fallback HTML');
         }
     }
 
-    /**
-     * Adiciona CSS base para o PDF
-     */
-    protected function addBaseCSS()
+    private function isMpdfAvailable()
     {
-        $css = '
-            body { 
-                font-family: DejaVuSans, sans-serif; 
-                font-size: 12px; 
-                line-height: 1.4;
-                color: #333;
-            }
-            .header { 
-                text-align: center; 
-                border-bottom: 2px solid #333; 
-                margin-bottom: 20px; 
-                padding-bottom: 10px;
-            }
-            .section { 
-                margin-bottom: 20px; 
-                page-break-inside: avoid;
-            }
-            .section-title { 
-                font-size: 14px; 
-                font-weight: bold; 
-                background-color: #f0f0f0; 
-                padding: 8px; 
-                margin-bottom: 10px;
-                border-left: 4px solid #007cba;
-            }
-            .field { 
-                margin-bottom: 8px; 
-            }
-            .field-label { 
-                font-weight: bold; 
-                display: inline-block; 
-                min-width: 150px;
-            }
-            .field-value { 
-                display: inline-block; 
-            }
-            .table { 
-                width: 100%; 
-                border-collapse: collapse; 
-                margin-bottom: 15px;
-            }
-            .table th, .table td { 
-                border: 1px solid #ddd; 
-                padding: 8px; 
-                text-align: left;
-            }
-            .table th { 
-                background-color: #f9f9f9; 
-                font-weight: bold;
-            }
-            .footer { 
-                position: fixed; 
-                bottom: 0; 
-                text-align: center; 
-                font-size: 10px; 
-                color: #666;
-            }
-        ';
-        
-        $this->mpdf->WriteHTML($css, HTMLParserMode::HEADER_CSS);
+        $autoload_path = __DIR__ . '/../vendor/autoload.php';
+        if (file_exists($autoload_path)) {
+            require_once $autoload_path;
+            return class_exists('Mpdf\\Mpdf');
+        }
+        return false;
     }
 
     /**
-     * Gera o conteúdo HTML da ficha
-     * 
-     * @param Registration $registration
-     * @return string
+     * Gera PDF da registration usando mPDF se disponível, senão HTML
      */
-    protected function generateHTMLContent(Registration $registration)
+    public function generateRegistrationPDF(Registration $registration)
+    {
+        try {
+            if ($this->isMpdfAvailable()) {
+                return $this->generatePDFWithMpdf($registration);
+            } else {
+                // Fallback: gerar HTML que pode ser impresso como PDF pelo navegador
+                return $this->generateHTMLForPrint($registration);
+            }
+        } catch (\Exception $e) {
+            error_log('PDFExport Error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    private function generatePDFWithMpdf(Registration $registration)
+    {
+        require_once __DIR__ . '/../vendor/autoload.php';
+        
+        $mpdf = new \Mpdf\Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'margin_left' => 15,
+            'margin_right' => 15,
+            'margin_top' => 20,
+            'margin_bottom' => 20
+        ]);
+
+        $htmlContent = $this->generateHTMLContent($registration);
+        
+        $mpdf->SetTitle('Inscrição #' . $registration->number);
+        $mpdf->WriteHTML($htmlContent);
+        
+        return $mpdf->Output('', 'S'); // Retorna string do PDF
+    }
+
+    private function generateHTMLForPrint(Registration $registration)
+    {
+        $htmlContent = $this->generateHTMLContent($registration);
+        
+        // Adicionar CSS específico para impressão
+        $printCSS = '
+        <style>
+            @media print {
+                body { font-family: Arial, sans-serif; }
+                .no-print { display: none; }
+            }
+            @page { margin: 2cm; }
+            body {
+                font-family: Arial, sans-serif;
+                font-size: 12pt;
+                line-height: 1.4;
+                color: #333;
+            }
+            .header {
+                text-align: center;
+                border-bottom: 2px solid #ccc;
+                padding-bottom: 10px;
+                margin-bottom: 20px;
+            }
+            .section {
+                margin-bottom: 15px;
+            }
+            .label {
+                font-weight: bold;
+                display: inline-block;
+                width: 150px;
+            }
+            .value {
+                display: inline-block;
+            }
+        </style>';
+        
+        return $printCSS . $htmlContent;
+    }
+
+    private function generateHTMLContent(Registration $registration)
     {
         $app = App::i();
         
-        // Usa o sistema de views do Mapas Culturais
-        $app->view->jsObject = [];
+        // Usar o template existente
+        $app->view->assign('registration', $registration);
+        $app->view->assign('agent', $registration->owner);
         
         ob_start();
-        include __DIR__ . '/../views/registration-pdf.php';
+        
+        // Tentar incluir template customizado, senão usar o padrão
+        $customTemplate = __DIR__ . '/../views/registration-pdf.php';
+        if (file_exists($customTemplate)) {
+            include $customTemplate;
+        } else {
+            // Template básico inline como fallback
+            echo $this->getBasicTemplate($registration);
+        }
+        
         $content = ob_get_clean();
         
         return $content;
     }
 
     /**
-     * Adiciona cabeçalho ao PDF
-     * 
-     * @param Registration $registration
+     * Gera template básico caso não encontre o arquivo customizado
      */
-    protected function addHeader(Registration $registration)
+    private function getBasicTemplate(Registration $registration)
     {
-        $header = '
+        $html = '
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Inscrição #' . $registration->number . '</title>
+        </head>
+        <body>
             <div class="header">
-                <h1>Ficha de Inscrição</h1>
-                <h2>' . htmlspecialchars($registration->opportunity->name) . '</h2>
-                <p><strong>Número da Inscrição:</strong> ' . htmlspecialchars($registration->number) . '</p>
-                <p><strong>Data de Envio:</strong> ' . $registration->sentTimestamp->format('d/m/Y H:i:s') . '</p>
+                <h1>' . i::__('Dados da Inscrição', 'pdfexport') . '</h1>
+                <h2>' . i::__('Número', 'pdfexport') . ': ' . $registration->number . '</h2>
             </div>
-        ';
-        
-        $this->mpdf->SetHTMLHeader($header);
-    }
-
-    /**
-     * Adiciona rodapé ao PDF
-     */
-    protected function addFooter()
-    {
-        $footer = '
-            <div class="footer">
-                <p>Documento gerado em ' . date('d/m/Y H:i:s') . ' - Página {PAGENO} de {nbpg}</p>
+            
+            <div class="section">
+                <h3>' . i::__('Informações Básicas', 'pdfexport') . '</h3>
+                <p><span class="label">' . i::__('Data da Inscrição', 'pdfexport') . ':</span> <span class="value">' . $registration->createTimestamp->format('d/m/Y H:i:s') . '</span></p>
+                <p><span class="label">' . i::__('Status', 'pdfexport') . ':</span> <span class="value">' . $registration->status . '</span></p>
             </div>
-        ';
+            
+            <div class="section">
+                <h3>' . i::__('Dados do Responsável', 'pdfexport') . '</h3>
+                <p><span class="label">' . i::__('Nome', 'pdfexport') . ':</span> <span class="value">' . ($registration->owner->name ?? 'N/A') . '</span></p>
+                <p><span class="label">' . i::__('Email', 'pdfexport') . ':</span> <span class="value">' . ($registration->owner->emailPrivado ?? 'N/A') . '</span></p>
+            </div>
+        </body>
+        </html>';
         
-        $this->mpdf->SetHTMLFooter($footer);
+        return $html;
     }
 }

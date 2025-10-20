@@ -37,12 +37,18 @@ class PDFController extends Controller
             $pdfService = new Services\PDFService();
             $pdfContent = $pdfService->generateRegistrationPDF($registration);
             
-            // Configurar headers para download do PDF
-            header('Content-Type: application/pdf');
-            header('Content-Disposition: attachment; filename="inscricao_' . $registration->number . '.pdf"');
-            header('Content-Length: ' . strlen($pdfContent));
+            if (strpos($pdfContent, '<!DOCTYPE html>') === 0) {
+                // É HTML para impressão
+                header('Content-Type: text/html; charset=utf-8');
+                echo $pdfContent;
+            } else {
+                // É PDF binário
+                header('Content-Type: application/pdf');
+                header('Content-Disposition: attachment; filename="inscricao_' . $registration->number . '.pdf"');
+                header('Content-Length: ' . strlen($pdfContent));
+                echo $pdfContent;
+            }
             
-            echo $pdfContent;
             $app->stop();
             
         } catch (\Exception $e) {
@@ -76,11 +82,17 @@ class PDFController extends Controller
             $pdfService = new Services\PDFService();
             $pdfContent = $pdfService->generateRegistrationPDF($registration);
             
-            // Exibir PDF inline no navegador
-            header('Content-Type: application/pdf');
-            header('Content-Disposition: inline; filename="preview_inscricao_' . $registration->number . '.pdf"');
+            if (strpos($pdfContent, '<!DOCTYPE html>') === 0) {
+                // É HTML para preview
+                header('Content-Type: text/html; charset=utf-8');
+                echo $pdfContent;
+            } else {
+                // É PDF binário
+                header('Content-Type: application/pdf');
+                header('Content-Disposition: inline; filename="preview_inscricao_' . $registration->number . '.pdf"');
+                echo $pdfContent;
+            }
             
-            echo $pdfContent;
             $app->stop();
             
         } catch (\Exception $e) {
