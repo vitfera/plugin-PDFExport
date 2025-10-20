@@ -3,46 +3,47 @@
 namespace PDFExport;
 
 use MapasCulturais\App;
-use MapasCulturais\i;
-use MapasCulturais\Controller;
+use MapasCulturais\Controllers\EntityController;
 use MapasCulturais\Entities\Registration;
+use MapasCulturais\i;
 
-class PDFController extends Controller
+class Controller extends EntityController
 {
     /**
-     * Gera PDF de uma registration
+     * Endpoint para gerar e baixar PDF da inscrição
+     * URL: /pdfexport/generatePDF/{registrationId}
      */
     public function GET_generatePDF()
     {
         $app = App::i();
         
-        // Verificar se ID da registration foi fornecido
-        $registration_id = $this->data['registration_id'] ?? null;
-        
-        if (!$registration_id) {
-            $app->halt(400, i::__('ID da inscrição não fornecido', 'pdfexport'));
-        }
-
-        // Buscar a registration
-        $registration = $app->repo('Registration')->find($registration_id);
-        
-        if (!$registration) {
-            $app->halt(404, i::__('Inscrição não encontrada', 'pdfexport'));
-        }
-
-        // Verificar permissões
-        $registration->checkPermission('view');
-
         try {
+            $registrationId = $this->getData['id'] ?? null;
+            
+            if (!$registrationId) {
+                $app->halt(400, i::__('ID da inscrição é obrigatório', 'pdfexport'));
+                return;
+            }
+
+            $registration = $app->repo('Registration')->find($registrationId);
+            
+            if (!$registration) {
+                $app->halt(404, i::__('Inscrição não encontrada', 'pdfexport'));
+                return;
+            }
+
+            if (!$registration->canUser('view')) {
+                $app->halt(403, i::__('Acesso negado', 'pdfexport'));
+                return;
+            }
+
             $pdfService = new Services\PDFService();
             $pdfContent = $pdfService->generateRegistrationPDF($registration);
-            
-            if (strpos($pdfContent, '<!DOCTYPE html>') === 0) {
-                // É HTML para impressão
+
+            if (strpos($pdfContent, '<!DOCTYPE html>') === 0 || strpos($pdfContent, '<html') === 0) {
                 header('Content-Type: text/html; charset=utf-8');
                 echo $pdfContent;
             } else {
-                // É PDF binário
                 header('Content-Type: application/pdf');
                 header('Content-Disposition: attachment; filename="inscricao_' . $registration->number . '.pdf"');
                 header('Content-Length: ' . strlen($pdfContent));
@@ -53,45 +54,43 @@ class PDFController extends Controller
             
         } catch (\Exception $e) {
             error_log("PDFExport Error: " . $e->getMessage());
-            $app->halt(500, i::__('Erro ao gerar PDF', 'pdfexport'));
+            $app->halt(500, i::__('Erro ao gerar PDF', 'pdfexport') . ': ' . $e->getMessage());
         }
     }
-    
+
     /**
-     * Endpoint para preview do PDF (opcional)
+     * Endpoint para preview do PDF
+     * URL: /pdfexport/previewPDF/{registrationId}
      */
     public function GET_previewPDF()
     {
         $app = App::i();
         
-        $registration_id = $this->data['registration_id'] ?? null;
-        
-        if (!$registration_id) {
-            $app->halt(400, i::__('ID da inscrição não fornecido', 'pdfexport'));
-        }
-
-        $registration = $app->repo('Registration')->find($registration_id);
-        
-        if (!$registration) {
-            $app->halt(404, i::__('Inscrição não encontrada', 'pdfexport'));
-        }
-
-        $registration->checkPermission('view');
-
         try {
+            $registrationId = $this->getData['id'] ?? null;
+            
+            if (!$registrationId) {
+                $app->halt(400, i::__('ID da inscrição é obrigatório', 'pdfexport'));
+                return;
+            }
+
+            $registration = $app->repo('Registration')->find($registrationId);
+            
+            if (!$registration) {
+                $app->halt(404, i::__('Inscrição não encontrada', 'pdfexport'));
+                return;
+            }
+
+            if (!$registration->canUser('view')) {
+                $app->halt(403, i::__('Acesso negado', 'pdfexport'));
+                return;
+            }
+
             $pdfService = new Services\PDFService();
             $pdfContent = $pdfService->generateRegistrationPDF($registration);
             
-            if (strpos($pdfContent, '<!DOCTYPE html>') === 0) {
-                // É HTML para preview
-                header('Content-Type: text/html; charset=utf-8');
-                echo $pdfContent;
-            } else {
-                // É PDF binário
-                header('Content-Type: application/pdf');
-                header('Content-Disposition: inline; filename="preview_inscricao_' . $registration->number . '.pdf"');
-                echo $pdfContent;
-            }
+            header('Content-Type: text/html; charset=utf-8');
+            echo $pdfContent;
             
             $app->stop();
             
