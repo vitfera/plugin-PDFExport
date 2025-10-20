@@ -1,0 +1,46 @@
+# Composer
+/vendor/
+composer.lock
+
+# PHP
+*.log
+*.tmp
+*.temp
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Cache
+cache/
+tmp/
+temp/
+
+# mPDF temporary files
+/vendor/mpdf/mpdf/tmp/*
+!/vendor/mpdf/mpdf/tmp/.gitignore
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+dist/
+build/
