@@ -18,7 +18,8 @@ class Controller extends EntityController
         $app = App::i();
         
         try {
-            $registrationId = $this->getData['id'] ?? null;
+            // Pega o ID da URL path /pdfexport/generatePDF/{id}
+            $registrationId = $this->data['id'] ?? null;
             
             if (!$registrationId) {
                 $app->halt(400, i::__('ID da inscrição é obrigatório', 'pdfexport'));
@@ -67,7 +68,8 @@ class Controller extends EntityController
         $app = App::i();
         
         try {
-            $registrationId = $this->getData['id'] ?? null;
+            // Pega o ID da URL path /pdfexport/previewPDF/{id}
+            $registrationId = $this->data['id'] ?? null;
             
             if (!$registrationId) {
                 $app->halt(400, i::__('ID da inscrição é obrigatório', 'pdfexport'));

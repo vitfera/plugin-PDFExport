@@ -37,7 +37,7 @@ class Plugin extends \MapasCulturais\Plugin
         });
 
         // Registrar Controller
-        $app->registerController('pdfexport', PDFController::class);
+        $app->registerController('pdfexport', Controller::class);
 
         // Log de debug para confirmar que o plugin está sendo inicializado
         error_log('PDFExport Plugin: _init() executado - Plugin inicializado com sucesso');
@@ -46,9 +46,9 @@ class Plugin extends \MapasCulturais\Plugin
         $app->hook('template(<<*>>):after', function() use($app, $plugin) {
             /** @var \MapasCulturais\Themes\BaseV2\Theme $this */
             
-            // Só executa se for registration/single e ainda não executou
+            // Só executa se for registration/single
             if ($this->controller->id !== 'registration' || 
-                ($this->template ?? '') !== 'registration/single' ||
+                $this->controller->action !== 'single' ||
                 defined('PDFEXPORT_BUTTON_ADDED')) {
                 return;
             }
@@ -74,42 +74,23 @@ class Plugin extends \MapasCulturais\Plugin
             <!-- PDFEXPORT-HOOK: END -->
             
             <script>
-                console.log("PDFExport Plugin: Script carregado para registration ID: ' . $registration->id . '");
-                
-                function downloadRegistrationPDF(registrationId) {
-                    console.log("downloadRegistrationPDF chamado para ID:", registrationId);
+                window.downloadRegistrationPDF = function(registrationId) {
+                    console.log("PDFExport: downloadRegistrationPDF chamado para ID:", registrationId);
                     
-                    if (typeof Utils !== "undefined") {
-                        const url = Utils.createUrl("registration", "downloadPdf", [registrationId]);
-                        console.log("Abrindo URL via Utils:", url);
-                        window.open(url, "_blank");
-                    } else {
-                        // Fallback se Utils não estiver disponível
-                        const fallbackUrl = "/registration/downloadPdf/" + registrationId;
-                        console.log("Abrindo URL fallback:", fallbackUrl);
-                        window.open(fallbackUrl, "_blank");
-                    }
-                }
+                    // Usar a rota do nosso controller PDFExport
+                    const pdfUrl = "/pdfexport/generatePDF/" + registrationId;
+                    console.log("PDFExport: Abrindo URL:", pdfUrl);
+                    
+                    // Abrir em nova aba
+                    window.open(pdfUrl, "_blank");
+                };
+                
+                console.log("PDFExport Plugin: Script carregado para registration ID: ' . $registration->id . '");
             </script>
             ';
         });
 
-        // Hook para adicionar rota de download PDF
-        $app->hook('GET(registration.downloadPdf)', function() use($app, $plugin) {
-            /** @var \MapasCulturais\Controllers\Registration $this */
-            $this->requireAuthentication();
-
-            $registration = $this->requestedEntity;
-            if (!$registration) {
-                $app->pass();
-            }
-
-            // Verifica permissão para visualizar a inscrição
-            $registration->checkPermission('view');
-
-            $pdfService = new Services\PDFService();
-            $pdfService->generateRegistrationPDF($registration);
-        });
+        // Rotas são tratadas pelo Controller registrado
 
         // Hook para adicionar assets CSS/JS do plugin
         $app->hook('app.init:after', function() use($app) {
