@@ -42,13 +42,12 @@ class Plugin extends \MapasCulturais\Plugin
         // Log de debug para confirmar que o plugin está sendo inicializado
         error_log('PDFExport Plugin: _init() executado - Plugin inicializado com sucesso');
 
-        // Hook para adicionar botão PDF - usar hook genérico mas com controle
+        // Hook para adicionar botão PDF - com controle de duplicação
         $app->hook('template(<<*>>):after', function() use($app, $plugin) {
             /** @var \MapasCulturais\Themes\BaseV2\Theme $this */
             
-            // Só executa se for registration/single
+            // Só executa se for registration e ainda não foi adicionado
             if ($this->controller->id !== 'registration' || 
-                $this->controller->action !== 'single' ||
                 defined('PDFEXPORT_BUTTON_ADDED')) {
                 return;
             }
@@ -58,34 +57,39 @@ class Plugin extends \MapasCulturais\Plugin
             
             $registration = $this->controller->requestedEntity;
             if (!$registration) {
+                error_log('PDFExport Plugin: Registration não encontrada');
                 return;
             }
 
             error_log('PDFExport Plugin: Adicionando botão PDF para registration ID: ' . $registration->id);
             
-            // Adiciona o botão diretamente no HTML
+            // Adiciona o botão com estilo melhorado
             echo '
             <!-- PDFEXPORT-HOOK: BEGIN -->
-            <div class="pdf-export-section" style="display: flex; justify-content: flex-end; margin: 1rem 0; gap: 10px; background: #f0f0f0; padding: 10px; border-radius: 5px;">
-                <button id="pdf-download-btn" class="button button--danger button--icon button--sm" onclick="downloadRegistrationPDF(' . $registration->id . ')" title="' . i::__('Baixar inscrição em PDF', 'pdfexport') . '">
+            <div id="pdf-export-container" style="position: fixed; top: 80px; right: 20px; z-index: 9999;">
+                <button id="pdf-download-btn" onclick="downloadRegistrationPDF(' . $registration->id . ')" 
+                        style="background: #e74c3c; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+                        title="' . i::__('Baixar inscrição em PDF', 'pdfexport') . '"
+                        onmouseover="this.style.background=\'#c0392b\'" 
+                        onmouseout="this.style.background=\'#e74c3c\'">
                     📄 ' . i::__($plugin->config['button_text'], 'pdfexport') . '
                 </button>
             </div>
             <!-- PDFEXPORT-HOOK: END -->
             
             <script>
-                window.downloadRegistrationPDF = function(registrationId) {
-                    console.log("PDFExport: downloadRegistrationPDF chamado para ID:", registrationId);
-                    
-                    // Usar a rota do nosso controller PDFExport
-                    const pdfUrl = "/pdfexport/generatePDF/" + registrationId;
-                    console.log("PDFExport: Abrindo URL:", pdfUrl);
-                    
-                    // Abrir em nova aba
-                    window.open(pdfUrl, "_blank");
-                };
+                console.log("PDFExport: Script carregado para registration ID: ' . $registration->id . '");
                 
-                console.log("PDFExport Plugin: Script carregado para registration ID: ' . $registration->id . '");
+                if (typeof window.downloadRegistrationPDF === "undefined") {
+                    window.downloadRegistrationPDF = function(registrationId) {
+                        console.log("PDFExport: downloadRegistrationPDF chamado para ID:", registrationId);
+                        
+                        const pdfUrl = "/pdfexport/generatePDF/" + registrationId;
+                        console.log("PDFExport: Abrindo URL:", pdfUrl);
+                        
+                        window.open(pdfUrl, "_blank");
+                    };
+                }
             </script>
             ';
         });

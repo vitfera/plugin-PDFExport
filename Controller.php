@@ -39,17 +39,14 @@ class Controller extends EntityController
             }
 
             $pdfService = new Services\PDFService();
-            $pdfContent = $pdfService->generateRegistrationPDF($registration);
+            $htmlContent = $pdfService->generateRegistrationPDF($registration);
 
-            if (strpos($pdfContent, '<!DOCTYPE html>') === 0 || strpos($pdfContent, '<html') === 0) {
-                header('Content-Type: text/html; charset=utf-8');
-                echo $pdfContent;
-            } else {
-                header('Content-Type: application/pdf');
-                header('Content-Disposition: attachment; filename="inscricao_' . $registration->number . '.pdf"');
-                header('Content-Length: ' . strlen($pdfContent));
-                echo $pdfContent;
-            }
+            // Servir como HTML otimizado para conversão em PDF
+            header('Content-Type: text/html; charset=utf-8');
+            header('Cache-Control: no-cache, must-revalidate');
+            header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
+            
+            echo $htmlContent;
             
             $app->stop();
             
@@ -89,10 +86,12 @@ class Controller extends EntityController
             }
 
             $pdfService = new Services\PDFService();
-            $pdfContent = $pdfService->generateRegistrationPDF($registration);
+            $htmlContent = $pdfService->generateRegistrationPDF($registration);
             
             header('Content-Type: text/html; charset=utf-8');
-            echo $pdfContent;
+            header('Cache-Control: no-cache, must-revalidate');
+            
+            echo $htmlContent;
             
             $app->stop();
             
