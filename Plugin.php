@@ -6,7 +6,6 @@ use MapasCulturais\App;
 use MapasCulturais\i;
 
 // Incluir dependências diretamente
-require_once __DIR__ . '/Services/PDFService.php';
 require_once __DIR__ . '/Controller.php';
 
 class Plugin extends \MapasCulturais\Plugin
