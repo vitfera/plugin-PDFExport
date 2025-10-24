@@ -3,11 +3,11 @@
 namespace PDFExport;
 
 use MapasCulturais\App;
-use MapasCulturais\Controllers\EntityController;
+use MapasCulturais\Controller as BaseController;
 use MapasCulturais\Entities\Registration;
 use MapasCulturais\i;
 
-class Controller extends EntityController
+class Controller extends BaseController
 {
     /**
      * Endpoint para gerar e baixar PDF da inscrição
@@ -18,6 +18,9 @@ class Controller extends EntityController
         $app = App::i();
         
         try {
+            // Configurar controller similar ao embedtools
+            $this->entityClassName = "MapasCulturais\\Entities\\Registration";
+            
             // Pega o ID da URL path /pdfexport/generatePDF/{id}
             $registrationId = $this->data['id'] ?? null;
             
@@ -38,17 +41,32 @@ class Controller extends EntityController
                 return;
             }
 
-            $pdfService = new Services\PDFService();
-            $htmlContent = $pdfService->generateRegistrationPDF($registration);
+            // Registrar metadados dos campos (importante para renderização completa)
+            $registration->registerFieldsMetadata();
+            
+            // Configurar dados para o template
+            $templateData = [
+                'entity' => $registration,
+                'opportunity' => $registration->opportunity,
+                'action' => 'pdf'
+            ];
 
-            // Servir como HTML otimizado para conversão em PDF
+            // Configurar headers para PDF
             header('Content-Type: text/html; charset=utf-8');
             header('Cache-Control: no-cache, must-revalidate');
             header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
             
-            echo $htmlContent;
+            // Definir o caminho dos templates do plugin
+            $pluginPath = dirname(__FILE__);
+            $templatePath = $pluginPath . '/layouts/parts/singles/registration-single--fields.php';
             
-            $app->stop();
+            // Renderizar usando include direto do template
+            ob_start();
+            extract($templateData);
+            include $templatePath;
+            $content = ob_get_clean();
+            
+            echo $content;
             
         } catch (\Exception $e) {
             error_log("PDFExport Error: " . $e->getMessage());
@@ -93,7 +111,8 @@ class Controller extends EntityController
             
             echo $htmlContent;
             
-            $app->stop();
+            // Finalizar resposta
+            exit;
             
         } catch (\Exception $e) {
             error_log("PDFExport Error: " . $e->getMessage());

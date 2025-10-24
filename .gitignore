@@ -10,6 +10,10 @@ assets/js/app.js
 assets/css/plugin-PDFExport.css
 mix-manifest.json
 
+# Arquivos compilados que não devem subir para o Git
+assets/js/pdf-export.js
+assets/css/pdf-export.css
+
 # Logs
 *.log
 
